@@ -10,11 +10,11 @@ These scripts were intended to work with Raspberry OS on a Raspberry Pi Zero 2 W
   * Change your bluetooth daemon to enable deprecated services.
   * Add Serial Port (SP) service through `sdptool`.
 
-    systemd/system/bluetooth.target.wants/bluetooth.service
+    File: `systemd/system/bluetooth.target.wants/bluetooth.service`
 
 2. Create a new systemd service file to automatically listen through a rfcomm interface.
 
-    systemd/system/rfcomm.service
+    File: `systemd/system/rfcomm.service`
 
 3. Recreate this virtual environment.
 
