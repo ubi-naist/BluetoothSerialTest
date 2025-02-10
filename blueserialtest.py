@@ -1,7 +1,8 @@
-# pyright:  reportUnusedCallResult=false, reportAny=false
+# basedpyright: reportUnusedCallResult=false, reportAny=false
 
 import argparse
 import subprocess
+import serial
 
 parser = argparse.ArgumentParser(prog='blueserialtest'
     , usage='%(prog)s [-r]'
@@ -51,4 +52,7 @@ except subprocess.CalledProcessError:
     print("External device is not connected: /dev/rfcomm0 not found")
     raise SystemExit
 
-print(RESPONSE)
+with serial.Serial("/dev/rfcomm0", 115200, timeout=1) as ser:
+    print("Serial port openned at {0}".format(ser))
+    while True:
+        print(ser.readline())
