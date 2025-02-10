@@ -15,7 +15,7 @@ parser.add_argument("-r", "--response"
     )
 
 args = parser.parse_args()
-RESPONSE = args.response
+RESPONSE = "{}\n".format(args.response).encode("utf-8")
 
 try:
     # Check for running rfcomm
@@ -55,4 +55,8 @@ except subprocess.CalledProcessError:
 with serial.Serial("/dev/rfcomm0", 115200, timeout=1) as ser:
     print("Serial port openned at {0}".format(ser))
     while True:
-        print(ser.readline())
+        data = ser.readline()
+        if not data:
+            continue
+        print(data)
+        ser.write(RESPONSE)
