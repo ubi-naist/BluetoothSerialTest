@@ -53,10 +53,14 @@ except subprocess.CalledProcessError:
     raise SystemExit
 
 with serial.Serial("/dev/rfcomm0", 115200, timeout=1) as ser:
-    print("Serial port openned at {0}".format(ser))
+    print(f"Serial port openned at {ser}")
     while True:
-        data = ser.readline()
-        if not data:
-            continue
-        print(data)
-        ser.write(RESPONSE)
+        try:
+            data = ser.readline()
+            if not data:
+                continue
+            print(data)
+            ser.write(RESPONSE)
+        except serial.SerialException as e:
+            print(f"Connection terminated: {e}")
+            raise SystemExit
