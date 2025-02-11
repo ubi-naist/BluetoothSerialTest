@@ -1,8 +1,8 @@
-# basedpyright: reportUnusedCallResult=false, reportAny=false
+# pyright: reportUnusedCallResult=false, reportAny=false
 
 import argparse
 import subprocess
-import serial
+from deviceinteractor import DeviceInteractor
 
 parser = argparse.ArgumentParser(prog='blueserialtest'
     , usage='%(prog)s [-r]'
@@ -13,9 +13,15 @@ parser.add_argument("-r", "--response"
     , type=str
     , default="OK"
     )
+parser.add_argument("-d", "--device"
+    , help="Serial device to connect to"
+    , type=str
+    , default="/dev/rfcomm0"
+    )
 
 args = parser.parse_args()
-RESPONSE = "{}\n".format(args.response).encode("utf-8")
+RESPONSE = f"{args.response}\r\n"
+DEVICE = args.device
 
 try:
     # Check for running rfcomm
@@ -45,22 +51,18 @@ except IndexError:
     raise SystemExit
 
 try:
-    result = subprocess.check_output(["ls", "-C", "/dev/rfcomm0"], encoding="utf-8")
-    if result.strip() == "/dev/rfcomm0":
-        print("External device connected and waiting on /dev/rfcomm0\n")
+    result = subprocess.check_output(["ls", "-C", DEVICE], encoding="utf-8")
+    if result.strip() == DEVICE:
+        print(f"External device connected and waiting on {DEVICE}\n")
 except subprocess.CalledProcessError:
-    print("External device is not connected: /dev/rfcomm0 not found")
+    print(f"External device is not connected: {DEVICE} not found")
     raise SystemExit
 
-with serial.Serial("/dev/rfcomm0", 115200, timeout=1) as ser:
-    print(f"Serial port openned at {ser}")
-    while True:
-        try:
-            data = ser.readline()
-            if not data:
-                continue
-            print(data)
-            ser.write(RESPONSE)
-        except serial.SerialException as e:
-            print(f"Connection terminated: {e}")
-            raise SystemExit
+opts = {
+    "Baudrate": 115200,
+    "Timeout": 1,
+    "Response": RESPONSE,
+}
+
+interactor = DeviceInteractor(DEVICE, options=opts)
+interactor.listen()
