@@ -18,10 +18,16 @@ parser.add_argument("-d", "--device"
     , type=str
     , default="/dev/rfcomm0"
     )
+parser.add_argument("-b", "--behavior"
+    , help="Custom behavior to load. This should be a root table name collection from behaviors.toml."
+    , type=str
+    , default="default"
+    )
 
 args = parser.parse_args()
 RESPONSE = f"{args.response}\r\n"
 DEVICE = args.device
+BEHAVIOR = args.behavior
 
 try:
     # Check for running rfcomm
@@ -63,6 +69,12 @@ opts = {
     "Timeout": 1,
     "Response": RESPONSE,
 }
+if BEHAVIOR != "default":
+    opts["Behavior"] = BEHAVIOR
 
-interactor = DeviceInteractor(DEVICE, options=opts)
-interactor.listen()
+try:
+    interactor = DeviceInteractor(DEVICE, options=opts)
+    interactor.listen()
+except IOError as e:
+    print(e)
+    raise SystemExit

@@ -1,0 +1,40 @@
+# Every root table name is a different behavior
+# Every member of root is the message content it should reply to.
+[example.ok]
+message = "OK"
+delay = 0
+
+# empty messages are not send
+[example.null]
+message = ""
+delay = 0
+
+[example.delay2]
+message = "2s delay"
+delay = 2
+
+[example.delay3]
+message = "5s delay"
+delay = 5
+
+[example.found]
+message = "OK found in previous message"
+delay = 1
+
+# Conditional
+# "if OK is present in previous message", execute <found> reply
+# otherwise, execute <empty> reply
+[example.cond1]
+delay = 0
+if = "ok"
+then = "found"
+else = "null"
+
+# Tables ending on _hex, will have hex string encoded elements
+[example_hex.hff0001]
+message = "h74657374206e6f2064656c6179"
+delay = 0
+
+[example_hex.hff05]
+message = "h746573742035732064656c6179"
+delay = 5
