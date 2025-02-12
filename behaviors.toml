@@ -23,12 +23,19 @@ delay = 1
 
 # Conditional
 # "if OK is present in previous message", execute <found> reply
-# otherwise, execute <empty> reply
+# otherwise, execute <null> reply
+# to be recognized as a conditional, it should not have a message member and have set if/then/else members
 [example.cond1]
 delay = 0
 if = "ok"
 then = "found"
 else = "null"
+
+# default case when there is not match
+[example._]
+message = "Non-case"
+
+# ============================================================
 
 # Tables ending on _hex, will have hex string encoded elements
 [example_hex.hff0001]
@@ -38,3 +45,7 @@ delay = 0
 [example_hex.hff05]
 message = "h746573742035732064656c6179"
 delay = 5
+
+# default case when there is not match
+[example_hex._]
+message = "h4e6f6e2d62696e6172792d63617365"

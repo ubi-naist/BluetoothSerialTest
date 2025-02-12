@@ -56,12 +56,11 @@ class DeviceInteractor:
         self.timeout: Final[int] = int(options.get("Timeout", DEFAULT_TIMEOUT))
         self.read_size: Final[int] = int(options.get("ReadSize", DEFAULT_READSIZE))
         self.encoding: Final[str] = str(options.get("Encoding", DEFAULT_ENCODING))
-        self.df_response: Final[bytes] = str(
-            options.get("Response", DEFAULT_RESPONSE)).encode(self.encoding)
-        self.behavior_name: Final[str] = str(options.get("Behavior", None))
+        self.df_response: Final[str] = str(options.get("Response", DEFAULT_RESPONSE))
+        self.behavior_name: Final[str] = str(options.get("Behavior"))
 
         self.serial: serial.Serial | None = None
-        self.previous_event: list[tuple[str, str]] = list()
+        self.previous_event: list[str] = list()
         self.binary_streams: Final[bool] = self.behavior_name[-4:] == "_hex"
 
     @final
@@ -86,15 +85,19 @@ class DeviceInteractor:
 
         while True:
             try:
-                data = ""
+                payload = ""
                 if self.binary_streams:
                     tmp = self.serial.read(self.read_size).hex()
-                    data = f"h{tmp}" if tmp else ""
+                    payload = f"h{tmp}" if tmp else ""
                 else:
-                    data = self.serial.readline().decode(self.encoding).strip()
-                if not data:
+                    payload = self.serial.readline().decode(self.encoding).strip()
+                if not payload:
                     continue
-                delay, response = self.state_machine(data, responses=behavior)
+                delay, response = self.state_machine(payload, responses=behavior)
+
+                if not response:
+                    continue
+
                 if delay > 0:
                     sleep(delay)
                 _ = self.serial.write(response)
@@ -112,32 +115,61 @@ class DeviceInteractor:
         except FileNotFoundError:
             raise IOError(f"Behavior toml file ({BEHAVIORS_FILENAME}) not found")
 
-        bh: dict[str, dict[str, str | int]] | None = behaviors.get(self.behavior_name, None)
+        bh: dict[str, dict[str, str | int]] | None = behaviors.get(self.behavior_name)
         if not bh:
             raise KeyError(f"'{self.behavior_name}' behavior not found in {BEHAVIORS_FILENAME}")
 
         return bh
 
+    @final
+    def default_behavior(self, payload: str) -> tuple[int, str]:
+        # Return self.df_response and wait <payload> seconds in case the message received was an integer
+        delay = 0
+        response = self.df_response
+        try:
+            tmp = int(payload)
+            if tmp > 0:
+                delay = tmp
+        except ValueError:
+            pass
+        return (delay, response)
+
     def state_machine(self,
-            msg_received: str,
+            payload: str,
             responses: dict[str, dict[str, str | int]] | None = None
             ) -> tuple[int, bytes]:
+
+        def process_output(string: str) -> bytes:
+            return bytes.fromhex(string[-1:]) if self.binary_streams else string.encode(self.encoding)
         delay = 0
         response = b""
 
         if not responses:
-            # Default behavior, return self.df_response and
-            # wait <msg_received> seconds in case the message received was an integer
-            try:
-                response = self.df_response
-                tmp = int(msg_received)
-                if tmp > 0:
-                    delay = tmp
-            except ValueError:
-                pass
+            print("Default behavior")
+            delay, str_response = self.default_behavior(payload)
+            response = process_output(str_response)
         else:
-            data = responses[msg_received]
+            print(f"${self.behavior_name} behavior")
+            str_response = ""
+            data = responses[payload]
             delay = int(data.get("delay", 0))
-            tmp = str(data.get("message", ""))
-            response = bytes.fromhex(tmp[1:]) if tmp else b""
+            tmp = data.get("message")
+            if tmp:
+                # removing the "h" prefix
+                str_response = str(tmp)
+            else:
+                # check if it's a conditional case
+                conditional = data.get("if")
+                then_case = data.get("then")
+                else_case = data.get("else")
+                if conditional and then_case and else_case:
+                    case = then_case if self.previous_event[-1] == str(conditional) else else_case
+                    data = responses[str(case)]
+                else:
+                    # case without a match, return default response "_" case
+                    data = responses["_"]
+                delay = int(data.get("delay", 0))
+                str_response = str(data.get("message"))
+            response = process_output(str_response)
+
         return (delay, response)
