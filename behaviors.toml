@@ -42,6 +42,10 @@ message = "Non-case"
 message = "h74657374206e6f2064656c6179"
 delay = 0
 
+[example_hex.hff01]
+message = "h000100"
+delay = 0
+
 [example_hex.hff05]
 message = "h746573742035732064656c6179"
 delay = 5

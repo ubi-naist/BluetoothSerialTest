@@ -98,6 +98,8 @@ class DeviceInteractor:
                 if not response:
                     continue
 
+                self.previous_event.append(payload)
+
                 if delay > 0:
                     sleep(delay)
                 _ = self.serial.write(response)
@@ -140,16 +142,17 @@ class DeviceInteractor:
             ) -> tuple[int, bytes]:
 
         def process_output(string: str) -> bytes:
-            return bytes.fromhex(string[-1:]) if self.binary_streams else "{0}\r\n".format(string).encode(self.encoding)
+            if self.binary_streams:
+                return bytes.fromhex(string[1:])
+            else:
+                return "{0}\r\n".format(string).encode(self.encoding) if string else b''
         delay = 0
         response = b""
 
         if not responses:
-            print("Default behavior")
             delay, str_response = self.default_behavior(payload)
             response = process_output(str_response)
         else:
-            print(f"'{self.behavior_name}' behavior")
             str_response = ""
             data = responses.get(payload)
             if not data:
@@ -160,16 +163,17 @@ class DeviceInteractor:
             if tmp:
                 str_response = str(tmp)
             else:
-                print("Test if it's conditional case")
                 # check if it's a conditional case
                 conditional = data.get("if")
                 then_case = data.get("then")
                 else_case = data.get("else")
                 if conditional and then_case and else_case:
-                    case = then_case if self.previous_event[-1] == str(conditional) else else_case
+                    if len(self.previous_event) > 0 and self.previous_event[-1] == str(conditional):
+                        case = then_case
+                    else:
+                        case = else_case
                     data = responses[str(case)]
                 else:
-                    print("Case without a match, defaulting to _ case")
                     # case without a match, return default response "_" case
                     data = responses.get("_", {})
                 delay = int(data.get("delay", 0))
