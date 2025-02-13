@@ -57,7 +57,7 @@ class DeviceInteractor:
         self.read_size: Final[int] = int(options.get("ReadSize", DEFAULT_READSIZE))
         self.encoding: Final[str] = str(options.get("Encoding", DEFAULT_ENCODING))
         self.df_response: Final[str] = str(options.get("Response", DEFAULT_RESPONSE))
-        self.behavior_name: Final[str] = str(options.get("Behavior"))
+        self.behavior_name: Final[str] = str(options.get("Behavior", ""))
 
         self.serial: serial.Serial | None = None
         self.previous_event: list[str] = list()
@@ -140,7 +140,7 @@ class DeviceInteractor:
             ) -> tuple[int, bytes]:
 
         def process_output(string: str) -> bytes:
-            return bytes.fromhex(string[-1:]) if self.binary_streams else string.encode(self.encoding)
+            return bytes.fromhex(string[-1:]) if self.binary_streams else "{0}\r\n".format(string).encode(self.encoding)
         delay = 0
         response = b""
 
@@ -149,15 +149,18 @@ class DeviceInteractor:
             delay, str_response = self.default_behavior(payload)
             response = process_output(str_response)
         else:
-            print(f"${self.behavior_name} behavior")
+            print(f"'{self.behavior_name}' behavior")
             str_response = ""
-            data = responses[payload]
+            data = responses.get(payload)
+            if not data:
+                # case without a match, return default response "_" case
+                data = responses.get("_", {})
             delay = int(data.get("delay", 0))
             tmp = data.get("message")
             if tmp:
-                # removing the "h" prefix
                 str_response = str(tmp)
             else:
+                print("Test if it's conditional case")
                 # check if it's a conditional case
                 conditional = data.get("if")
                 then_case = data.get("then")
@@ -166,10 +169,11 @@ class DeviceInteractor:
                     case = then_case if self.previous_event[-1] == str(conditional) else else_case
                     data = responses[str(case)]
                 else:
+                    print("Case without a match, defaulting to _ case")
                     # case without a match, return default response "_" case
-                    data = responses["_"]
+                    data = responses.get("_", {})
                 delay = int(data.get("delay", 0))
-                str_response = str(data.get("message"))
+                str_response = str(data.get("message", ""))
             response = process_output(str_response)
 
         return (delay, response)

@@ -13,7 +13,7 @@ delay = 0
 message = "2s delay"
 delay = 2
 
-[example.delay3]
+[example.delay5]
 message = "5s delay"
 delay = 5
 
