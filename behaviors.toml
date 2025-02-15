@@ -53,3 +53,44 @@ delay = 5
 # default case when there is not match
 [example_hex._]
 message = "h4e6f6e2d62696e6172792d63617365"
+
+# ============================================================
+
+# Shimmer3 GSR Simulator
+
+# Set sensors, Analog Accel, Gyro, GSR and PPG
+[shimmer3gsr_hex.h08C40100]
+message = "hff"
+delay = 1
+
+# Enable, expansion boarda internal power
+[shimmer3gsr_hex.h5e01]
+message = "hff"
+delay = 0.5
+
+# Set sampling frequency to 120Hz
+# Little-endian, expressed as delay units 32768/120Hz = 273U, 0x0111
+[shimmer3gsr_hex.h051101]
+message = "hff"
+delay = 0.8
+
+# Start streaming data
+[shimmer3gsr_hex.h07]
+message = "hff"
+delay = 1.4
+
+# Stop streaming data
+[shimmer3gsr_hex.h20]
+message = "hff"
+delay = 1.4
+
+# Example streaming output, bytes: [0:1]packettype, [1:4]timestamp,
+# [4:10] analog accel, [10:16] gyro, [16:18] GSR, [18:20] PPG
+[shimmer3gsr_hex.h0001]
+message = "h0101020300010002000300040005000600070008000900010002000300040005000600070008000980010001"
+delay = 0.2
+
+# ACK for any unmatched command
+[shimmer3gsr_hex._]
+message = "hff"
+delay = 0.5
