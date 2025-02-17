@@ -58,6 +58,7 @@ class DeviceInteractor:
         self.encoding: Final[str] = str(options.get("Encoding", DEFAULT_ENCODING))
         self.df_response: Final[str] = str(options.get("Response", DEFAULT_RESPONSE))
         self.behavior_name: Final[str] = str(options.get("Behavior", ""))
+        self.show: Final[bool] = bool(options.get("Show", True))
 
         self.serial: serial.Serial | None = None
         self.previous_event: list[str] = list()
@@ -93,6 +94,9 @@ class DeviceInteractor:
                     payload = self.serial.readline().decode(self.encoding).strip()
                 if not payload:
                     continue
+
+                if self.show:
+                    print(f"RX: {payload}")
                 delay, response = self.state_machine(payload, responses=behavior)
 
                 if not response:
@@ -102,6 +106,9 @@ class DeviceInteractor:
 
                 if delay > 0:
                     sleep(delay)
+
+                if self.show:
+                    print(f"TX: {response}")
                 _ = self.serial.write(response)
             except serial.SerialException as e:
                 raise IOError(f"Connection terminated: {e}")
@@ -148,6 +155,7 @@ class DeviceInteractor:
                 return "{0}\r\n".format(string).encode(self.encoding) if string else b''
         delay = 0
         response = b""
+        payload = payload.lower()
 
         if not responses:
             delay, str_response = self.default_behavior(payload)
