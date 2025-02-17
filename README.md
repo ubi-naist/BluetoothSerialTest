@@ -54,6 +54,6 @@ options:
 
 ## Example use
 
-Capture from android's bluetooth serial client ("Serial Bluetooth Terminal")[https://play.google.com/store/apps/details?id=de.kai_morich.serial_bluetooth_terminal]
+Capture from android's bluetooth serial client ["Serial Bluetooth Terminal"](https://play.google.com/store/apps/details?id=de.kai_morich.serial_bluetooth_terminal)
 
-![screen capture](placehandler)
+![screen capture](https://github.com/ubi-naist/BluetoothSerialTest/blob/main/ClientExampleCapture.gif)
