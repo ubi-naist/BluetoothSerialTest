@@ -52,3 +52,8 @@ options:
                         PySerial's serial device baudrate. (default: 115200)
 ```
 
+## Example use
+
+Capture from android's bluetooth serial client ("Serial Bluetooth Terminal")[https://play.google.com/store/apps/details?id=de.kai_morich.serial_bluetooth_terminal]
+
+![screen capture](placehandler)
