@@ -28,12 +28,16 @@ class DeviceInteractor:
     read_size : int (default: {DEFAULT_READSIZE})
         Bytes that will be read
     df_response : str (default: {DEFAULT_RESPONSE})
-        Default df_response to any data received.
+        Default df_response to any data received when no custom behavior is specified.
     encoding : str (default: {DEFAULT_ENCODING})
         Enconding that should be used for response's.
         If the selected behavior ends in "_hex" this parameter will be ignored and the
         serial port input and the responses written into it will be encoded as plain
         binary strings internally handled by bytes.hex() and bytes.fromhex() methods.
+    behavior_name : str (default: "")
+        Custom behavior as defined on a {BEHAVIORS_FILENAME} table.
+    show : bool (default: True)
+        If True, it will echo all Tx and Rx data on stdout.
 
     Methods
     -------

@@ -5,29 +5,45 @@ import subprocess
 from deviceinteractor import DeviceInteractor
 
 parser = argparse.ArgumentParser(prog='blueserialtest'
-    , usage='%(prog)s [-r]'
-    , description='Listens on rfcomm serial device and sends a default response'
+    , usage='%(prog)s [-r response] [-e encoding] [-b behavior_name] [--dont_show] [-d device] [-br baudrate]'
+    , description=(
+        "Listens on rfcomm serial device and sends a pre programmed response."
+        "\n\nResponses can be customized as a predifined behavior on a behaviors.toml file")
+    , formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 parser.add_argument("-r", "--response"
     , help="Default response for every message received"
     , type=str
     , default="OK"
     )
-parser.add_argument("-d", "--device"
-    , help="Serial device to connect to"
+parser.add_argument("-e", "--encoding"
+    , help="Enconding used for plain-text communication/behaviors."
     , type=str
-    , default="/dev/rfcomm0"
+    , default="utf-8"
     )
 parser.add_argument("-b", "--behavior"
     , help="Custom behavior to load. This should be a root table name collection from behaviors.toml."
     , type=str
     , default="default"
     )
+parser.add_argument("-ds", "--dont-show"
+    , help="Don't echo serial communication on stdout."
+    , default=False
+    , action="store_true"
+    )
+parser.add_argument("-d", "--device"
+    , help="Serial device to connect to"
+    , type=str
+    , default="/dev/rfcomm0"
+    )
+parser.add_argument("-br", "--baudrate"
+    , help="PySerial's serial device baudrate."
+    , type=int
+    , default=115200
+    )
 
 args = parser.parse_args()
-RESPONSE = f"{args.response}\r\n"
 DEVICE = args.device
-BEHAVIOR = args.behavior
 
 try:
     # Check for running rfcomm
@@ -65,9 +81,11 @@ except subprocess.CalledProcessError:
     raise SystemExit
 
 opts = {
-    "Baudrate": 115200,
     "Timeout": 1,
-    "Response": RESPONSE,
+    "Response": f"{args.response}\r\n",
+    "Show": not args.dont_show,
+    "Encoding": args.encoding,
+    "Baudrate": args.baudrate,
 }
 if BEHAVIOR != "default":
     opts["Behavior"] = BEHAVIOR
