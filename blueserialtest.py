@@ -87,8 +87,8 @@ opts = {
     "Encoding": args.encoding,
     "Baudrate": args.baudrate,
 }
-if BEHAVIOR != "default":
-    opts["Behavior"] = BEHAVIOR
+if args.behavior != "default":
+    opts["Behavior"] = args.behavior
 
 try:
     interactor = DeviceInteractor(DEVICE, options=opts)
