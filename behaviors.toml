@@ -68,9 +68,9 @@ delay = 1
 message = "hff"
 delay = 0.5
 
-# Set sampling frequency to 120Hz
-# Little-endian, expressed as delay units 32768/120Hz = 273U, 0x0111
-[shimmer3gsr_hex.h051101]
+# Set sampling frequency to 100Hz
+# Little-endian, expressed as delay units 32768/100Hz = 327U, 0x0147
+[shimmer3gsr_hex.h054701]
 message = "hff"
 delay = 0.8
 
@@ -78,16 +78,28 @@ delay = 0.8
 [shimmer3gsr_hex.h07]
 message = "hff"
 delay = 1.4
+stream = true
+streams = ["h0001", "h0002", "h0003"]
+period = 2
 
 # Stop streaming data
 [shimmer3gsr_hex.h20]
 message = "hff"
 delay = 1.4
+stream = false
 
 # Example streaming output, bytes: [0:1]packettype, [1:4]timestamp,
 # [4:10] analog accel, [10:16] gyro, [16:18] GSR, [18:20] PPG
 [shimmer3gsr_hex.h0001]
 message = "h0001020300010002000300040005000600070008000900010002000300040005000600070008000980010001"
+delay = 0.2
+
+[shimmer3gsr_hex.h0002]
+message = "h0002020300010002000300040005000600070008000900010002000300040005000600070008000980020002"
+delay = 0.2
+
+[shimmer3gsr_hex.h0003]
+message = "h0003020300010002000300040005000600070008000900010002000300040005000600070008000980030003"
 delay = 0.2
 
 # ACK for any unmatched command

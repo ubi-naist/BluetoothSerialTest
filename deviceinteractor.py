@@ -1,5 +1,6 @@
-from typing import Final, final
-from time import sleep
+from typing import Final, final, cast
+from time import sleep, time
+import random
 import tomllib
 import serial
 
@@ -67,6 +68,10 @@ class DeviceInteractor:
         self.serial: serial.Serial | None = None
         self.previous_event: list[str] = list()
         self.binary_streams: Final[bool] = self.behavior_name[-4:] == "_hex"
+        self.streaming: bool = False
+        self.streaming_period: int = 0 # in milliseconds
+        self.streams: list[str] = list()
+        self.last_stream_timestamp: int = 0 # unix time with milliseconds
 
     @final
     def __del__(self) -> None:
@@ -87,6 +92,8 @@ class DeviceInteractor:
             self.serial = self.init_device()
 
         behavior = self.load_behavior()
+        self.last_stream_timestamp = round(time() * 1000)
+        next_stream_timestamp = self.last_stream_timestamp + self.streaming_period
 
         while True:
             try:
@@ -96,6 +103,13 @@ class DeviceInteractor:
                     payload = f"h{tmp}" if tmp else ""
                 else:
                     payload = self.serial.readline().decode(self.encoding).strip()
+
+                # streaming functionality
+                if not payload and self.streaming and round(time() * 1000) > next_stream_timestamp:
+                    payload = random.choice(self.streams)
+                    self.last_stream_timestamp = round(time() * 1000)
+                    next_stream_timestamp = self.last_stream_timestamp + self.streaming_period
+
                 if not payload:
                     continue
 
@@ -147,23 +161,24 @@ class DeviceInteractor:
             pass
         return (delay, response)
 
+
+    def process_output(self, string: str) -> bytes:
+        if self.binary_streams:
+            return bytes.fromhex(string[1:])
+        else:
+            return "{0}\r\n".format(string).encode(self.encoding) if string else b''
+
     def state_machine(self,
             payload: str,
             responses: dict[str, dict[str, str | int]] | None = None
             ) -> tuple[int, bytes]:
-
-        def process_output(string: str) -> bytes:
-            if self.binary_streams:
-                return bytes.fromhex(string[1:])
-            else:
-                return "{0}\r\n".format(string).encode(self.encoding) if string else b''
         delay = 0
         response = b""
         payload = payload.lower()
 
         if not responses:
             delay, str_response = self.default_behavior(payload)
-            response = process_output(str_response)
+            response = self.process_output(str_response)
         else:
             str_response = ""
             data = responses.get(payload)
@@ -173,6 +188,15 @@ class DeviceInteractor:
             delay = int(data.get("delay", 0))
             tmp = data.get("message")
             if tmp:
+                # has a message response
+                streamer = data.get("stream")
+                if streamer is not None:
+                    # stream start/stop response
+                    self.streaming_period = abs(int(data.get("period", 0))) * 1000
+                    self.streams = cast(list[str], data.get("streams", []))
+                    self.streaming = bool(streamer) and bool(self.streaming_period) and bool(self.streams)
+                    print(f"Streaming: {self.streaming}, Period: {self.streaming_period}, Streams: {self.streams}")
+                # normal response
                 str_response = str(tmp)
             else:
                 # check if it's a conditional case
@@ -190,6 +214,6 @@ class DeviceInteractor:
                     data = responses.get("_", {})
                 delay = int(data.get("delay", 0))
                 str_response = str(data.get("message", ""))
-            response = process_output(str_response)
+            response = self.process_output(str_response)
 
         return (delay, response)
