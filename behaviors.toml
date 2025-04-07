@@ -110,7 +110,7 @@ delay = 0.1
 
 # Get wrAccel Sampling Rate
 [shimmer3gsr_hex.h42]
-message = "h4104"
+message = "hff4104"
 delay = 0.1
 
 # Get All Calibration Data
