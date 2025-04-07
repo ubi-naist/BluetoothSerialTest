@@ -103,7 +103,7 @@ class DeviceInteractor:
             except IndexError:
                 raise IndexError(f"The idx of streaming data list got out of bounds (idx: {self.last_data_idx}, streams len: {len(data)})")
             self.last_data_idx += 1
-            if len(data) >= self.last_data_idx:
+            if self.last_data_idx >= len(data):
                 self.last_data_idx = 0
             return payload
 
