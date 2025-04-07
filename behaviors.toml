@@ -158,11 +158,6 @@ delay = 0.1
 message = "hff9f086f94673200f18fb1d7d00b152336fff9ff8c3cf8c67017"
 delay = 0.1
 
-# Get BMP280 Calibration Coefficients
-[shimmer3gsr_hex.ha0]
-message = "hff9f086f94673200f18fb1d7d00b152336fff9ff8c3cf8c67017"
-delay = 0.1
-
 # Set sensors, Analog Accel, Battery, PPG, GSR, Gyro, Magneto, Temp and Press
 [shimmer3gsr_hex.h08e42104]
 message = "hff"
