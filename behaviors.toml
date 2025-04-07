@@ -58,8 +58,113 @@ message = "h4e6f6e2d62696e6172792d63617365"
 
 # Shimmer3 GSR Simulator
 
-# Set sensors, Analog Accel, Gyro, GSR and PPG
-[shimmer3gsr_hex.h08c40100]
+# Get Firmware Version
+[shimmer3gsr_hex.h2e]
+message = "hff2f030000001000"
+delay = 0.1
+
+# Get Device Version
+[shimmer3gsr_hex.h3f]
+message = "hff2503"
+delay = 0.1
+
+# Get Charge Status LED
+[shimmer3gsr_hex.h32]
+message = "hff3100"
+delay = 0.1
+
+# Get Expansion Card Information
+[shimmer3gsr_hex.h660300]
+message = "hff6503300500"
+delay = 0.1
+
+# Get Bluetooth Version String
+[shimmer3gsr_hex.ha1]
+message = "hffa233524e343637382056312e32332030362f33302f32303231202863294d6963726f6368697020546563686e6f6c6f677920496e63"
+delay = 0.1
+
+# Get Device Status
+[shimmer3gsr_hex.h72]
+message = "hff8a7120"
+delay = 0.1
+
+# Get wrAccel Range
+[shimmer3gsr_hex.h0b]
+message = "hff0a00"
+delay = 0.1
+
+# Get Device Sampling Rate
+[shimmer3gsr_hex.h03]
+message = "hff040008"
+delay = 0.1
+
+# Get Magnetometer Gain
+[shimmer3gsr_hex.h39]
+message = "hff3800"
+delay = 0.1
+
+# Get mpy Gyro Range
+[shimmer3gsr_hex.h4b]
+message = "hff4a01"
+delay = 0.1
+
+# Get wrAccel Sampling Rate
+[shimmer3gsr_hex.h42]
+message = "h4104"
+delay = 0.1
+
+# Get All Calibration Data
+[shimmer3gsr_hex.h2c]
+message = "hff2d08cd08cd08cd005c005c005c009c009c000000009c000000000000199619961996009c009c000000009c000000000000029b029b029b009c0064000000009c000000000000068706870687009c0064000000009c"
+delay = 0.1
+
+# Get Expansion Board Internal Power Status
+[shimmer3gsr_hex.h60]
+message = "hff5f01"
+delay = 0.1
+
+# Get Device Name String
+[shimmer3gsr_hex.h7b]
+message = "hff7a0c5368696d6d65725f36343935"
+delay = 0.1
+
+# Get Experiment ID Name String
+[shimmer3gsr_hex.h7e]
+message = "hff7d0b64656661756c745f657870"
+delay = 0.1
+
+# Get Device ID Number
+[shimmer3gsr_hex.h84]
+message = "hff8300"
+delay = 0.1
+
+# Get Config Time String
+[shimmer3gsr_hex.h87]
+message = "hff860a31373430393839343330"
+delay = 0.1
+
+# Inquiry Status Command
+[shimmer3gsr_hex.h01]
+message = "hff020008419b09090e0100010203121c0a0b0c0708091a1b"
+delay = 0.1
+
+# Get Bluetooth Baud Rate
+[shimmer3gsr_hex.h6c]
+message = "hff6b0b"
+delay = 0.1
+
+# Get BMP280 Calibration Coefficients
+[shimmer3gsr_hex.ha0]
+message = "hff9f086f94673200f18fb1d7d00b152336fff9ff8c3cf8c67017"
+delay = 0.1
+
+# Get BMP280 Calibration Coefficients
+[shimmer3gsr_hex.ha0]
+message = "hff9f086f94673200f18fb1d7d00b152336fff9ff8c3cf8c67017"
+delay = 0.1
+
+# Set sensors, Analog Accel, Battery, PPG, GSR, Gyro, Magneto, Temp and Press
+[shimmer3gsr_hex.h08e42104]
 message = "hff"
 delay = 1
 
@@ -79,7 +184,7 @@ delay = 0.8
 message = "hff"
 delay = 1.4
 stream = true
-streams = ["h0001", "h0002", "h0003"]
+streams = ["h1001", "h1002", "h1003", "h1004", "h1005", "h1006"]
 period = 2
 
 # Stop streaming data
@@ -102,7 +207,33 @@ delay = 0.2
 message = "h0003020300010002000300040005000600070008000900010002000300040005000600070008000980030003"
 delay = 0.2
 
+# Example streaming output, bytes: [0:1]packettype, [1:4]timestamp,
+# [4:10] analog accel, [10:16] gyro, [16:18] GSR, [18:20] PPG
+[shimmer3gsr_hex.h1001]
+message = "h0041d235ec0721083b0bca0a000000c0ff3e050fef5ce1ffbeff33fd80004cac00"
+delay = 2
+
+[shimmer3gsr_hex.h1002]
+message = "h0041da35c007c907380bca0a000000c0f79903cef406d8ffc5ff2efd80004cad00"
+delay = 2
+
+[shimmer3gsr_hex.h1003]
+message = "h00416236f007fa07200bcb0a000088cd007503751390bbffafff38fd846b4cae00"
+delay = 2
+
+[shimmer3gsr_hex.h1004]
+message = "h00417a369e07c707780bcb0a0000b3cdfd6eff"
+delay = 2
+
+[shimmer3gsr_hex.h1005]
+message = "h4f17ccdaffb3ff2ffd846b4caf00"
+delay = 2
+
+[shimmer3gsr_hex.h1006]
+message = "h00418236b6070508300bcb0a0000c0cdfb80047710e7e2ffabff2dfd846b4caf00"
+delay = 2
+
 # ACK for any unmatched command
 [shimmer3gsr_hex._]
-message = ""
+message = "hff"
 delay = 0

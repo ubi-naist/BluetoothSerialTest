@@ -1,3 +1,4 @@
+from ast import In
 from typing import Final, final, cast
 from time import sleep, time
 import random
@@ -39,6 +40,10 @@ class DeviceInteractor:
         Custom behavior as defined on a {BEHAVIORS_FILENAME} table.
     show : bool (default: True)
         If True, it will echo all Tx and Rx data on stdout.
+    random_choice : bool (default: False)
+        If True and streaming is True, it will choose at random one of the behavior binary
+        responses. Otherwise, the stream order will be according to beaviors.toml <streams>
+        definition.
 
     Methods
     -------
@@ -64,6 +69,7 @@ class DeviceInteractor:
         self.df_response: Final[str] = str(options.get("Response", DEFAULT_RESPONSE))
         self.behavior_name: Final[str] = str(options.get("Behavior", ""))
         self.show: Final[bool] = bool(options.get("Show", True))
+        self.random_choice: Final[bool] = bool(options.get("RandomChoice", False))
 
         self.serial: serial.Serial | None = None
         self.previous_event: list[str] = list()
@@ -72,6 +78,7 @@ class DeviceInteractor:
         self.streaming_period: int = 0 # in milliseconds
         self.streams: list[str] = list()
         self.last_stream_timestamp: int = 0 # unix time with milliseconds
+        self.last_data_idx: int = 0
 
     @final
     def __del__(self) -> None:
@@ -85,6 +92,21 @@ class DeviceInteractor:
         if not ser.is_open:
             raise IOError(f"Serial device {self.device} not found")
         return ser
+
+    def data_selector(self, data: list[str]) -> str:
+        if self.random_choice:
+            return random.choice(data)
+        else:
+            payload = ""
+            try:
+                payload = data[self.last_data_idx]
+            except IndexError:
+                raise IndexError(f"The idx of streaming data list got out of bounds (idx: {self.last_data_idx}, streams len: {len(data)})")
+            self.last_data_idx += 1
+            if len(data) >= self.last_data_idx:
+                self.last_data_idx = 0
+            return payload
+
 
     @final
     def listen(self) -> None:
@@ -106,7 +128,7 @@ class DeviceInteractor:
 
                 # streaming functionality
                 if not payload and self.streaming and round(time() * 1000) > next_stream_timestamp:
-                    payload = random.choice(self.streams)
+                    payload = self.data_selector(self.streams)
                     self.last_stream_timestamp = round(time() * 1000)
                     next_stream_timestamp = self.last_stream_timestamp + self.streaming_period
 
