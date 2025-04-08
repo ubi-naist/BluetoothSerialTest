@@ -148,7 +148,10 @@ class DeviceInteractor:
                     sleep(delay)
 
                 if self.show:
-                    print(f"TX: {response}")
+                    if self.binary_streams:
+                        print("TX: " + ",".join(["{:02x}".format(byte) for byte in response]))
+                    else:
+                        print(f"TX: {response}")
                 _ = self.serial.write(response)
             except serial.SerialException as e:
                 raise IOError(f"Connection terminated: {e}")
